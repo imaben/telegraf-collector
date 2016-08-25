@@ -1,0 +1,12 @@
+{
+    "sql" : [
+        {
+            "sql" : "select count(1) as 'user_msg_total' from angejia.user_msg where created_at >= {START_TIME} and created_at <= {END_TIME}",
+            "frequency" : 1
+        },
+        {
+            "sql" : "select count(1) as 'user_msg_total' from angejia.user_msg where created_at >= {START_TIME} and created_at <= {END_TIME}",
+            "frequency" : 60
+        }
+    ]
+}
