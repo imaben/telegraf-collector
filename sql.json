@@ -1,12 +1,24 @@
 {
     "sql" : [
         {
-            "sql" : "select count(1) as 'user_msg_total' from angejia.user_msg where created_at >= {START_TIME} and created_at <= {END_TIME}",
+            "sql" : "every 1 second",
             "frequency" : 1
         },
         {
-            "sql" : "select count(1) as 'user_msg_total' from angejia.user_msg where created_at >= {START_TIME} and created_at <= {END_TIME}",
-            "frequency" : 60
+            "sql" : "every 2 seconds",
+            "frequency" : 2
+        },
+        {
+            "sql" : "every 3 seconds",
+            "frequency" : 3
+        },
+        {
+            "sql" : "every 4 seconds",
+            "frequency" : 4
+        },
+        {
+            "sql" : "every 5 seconds",
+            "frequency" : 5
         }
     ]
 }

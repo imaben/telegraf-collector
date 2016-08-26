@@ -4,6 +4,7 @@ import (
 	"fmt"
 	_ "net"
 	"os"
+	"sync"
 	"time"
 
 	_ "github.com/influxdata/telegraf/plugins/parsers"
@@ -33,21 +34,23 @@ var Sqls = struct {
 	}
 }{}
 
-func executeSql(sql string, timer *time.Timer) {
-	<-timer.C
-	fmt.Println(sql)
+var wg sync.WaitGroup
+
+func startTimer(sql string, frequency uint) {
+	for {
+		fmt.Println(sql)
+		//now := time.Now()
+		//next := now.Add(time.Second * time.Duration(frequency))
+		t := time.NewTimer(time.Second * time.Duration(frequency))
+		<-t.C
+	}
+
 }
 
 func loop() {
-	timers := make([]*time.Timer, len(Sqls.Sql))
-
-	for k, s := range Sqls.Sql {
-		timers[k] = time.NewTimer(time.Second * time.Duration(s.Frequency))
-		go executeSql(s.Sql, timers[k])
-	}
-
-	for {
-		select {}
+	for _, s := range Sqls.Sql {
+		wg.Add(1)
+		go startTimer(s.Sql, s.Frequency)
 	}
 }
 
@@ -66,5 +69,6 @@ func main() {
 		fmt.Fprintln(os.Stdout, "No task to work")
 		os.Exit(0)
 	}
-	go loop()
+	loop()
+	wg.Wait()
 }
