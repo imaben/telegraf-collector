@@ -1,23 +1,8 @@
 {
     "sql" : [
         {
-            "sql" : "every 1 second",
-            "frequency" : 1
-        },
-        {
-            "sql" : "every 2 seconds",
-            "frequency" : 2
-        },
-        {
-            "sql" : "every 3 seconds",
-            "frequency" : 3
-        },
-        {
-            "sql" : "every 4 seconds",
-            "frequency" : 4
-        },
-        {
-            "sql" : "every 5 seconds",
+            "table" : "visit",
+            "sql" : "select count(1) as visit_count from visit where created_at >= '{START_TIME}' and created_at <= '{END_TIME}'",
             "frequency" : 5
         }
     ]

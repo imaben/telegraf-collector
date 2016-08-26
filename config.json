@@ -1,12 +1,12 @@
 {
     "server": {
-        "host": "127.0.0.10",
-        "port": 8194
+        "host": "127.0.0.1",
+        "port": 8094
     },
     "db" : {
         "host" : "127.0.0.1",
         "port" : 3306,
-        "username" : "root",
-        "password" : "root"
+        "username" : "maben",
+        "password" : "12345678"
     }
 }
