@@ -120,6 +120,7 @@ func executeQuery(s, table string) {
 		fmt.Fprintln(os.Stderr, "Query error ", err.Error())
 		return
 	}
+	defer rows.Close()
 
 	columns, err := rows.Columns()
 	if err != nil {
