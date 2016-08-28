@@ -69,10 +69,10 @@ func initMySQL() error {
 }
 
 func formatSql(s string, frequency uint) string {
-	end_time := time.Now().Format("2006-01-02 15:04:05")
-	start_time := time.Unix(int64(time.Now().Unix()-int64(frequency)), 0).Format("2006-01-02 15:04:05")
-	s = strings.Replace(s, "{START_TIME}", start_time, -1)
-	s = strings.Replace(s, "{END_TIME}", end_time, -1)
+	endTime := time.Now().Format("2006-01-02 15:04:05")
+	startTime := time.Unix(int64(time.Now().Unix()-int64(frequency)), 0).Format("2006-01-02 15:04:05")
+	s = strings.Replace(s, "{START_TIME}", startTime, -1)
+	s = strings.Replace(s, "{END_TIME}", endTime, -1)
 	return s
 }
 
