@@ -32,6 +32,7 @@ type collectItem struct {
 	Table     string
 	Sql       string
 	Frequency uint
+	Delay     uint
 }
 
 var Sqls = struct {
@@ -68,9 +69,9 @@ func initMySQL() error {
 	return nil
 }
 
-func formatSql(s string, frequency uint) string {
-	endTime := time.Now().Format("2006-01-02 15:04:05")
-	startTime := time.Unix(int64(time.Now().Unix()-int64(frequency)), 0).Format("2006-01-02 15:04:05")
+func formatSql(s string, frequency, delay uint) string {
+	endTime := time.Unix(int64(time.Now().Unix())-int64(delay), 0).Format("2006-01-02 15:04:05")
+	startTime := time.Unix(int64(time.Now().Unix()-int64(frequency)-int64(delay)), 0).Format("2006-01-02 15:04:05")
 	s = strings.Replace(s, "{START_TIME}", startTime, -1)
 	s = strings.Replace(s, "{END_TIME}", endTime, -1)
 	return s
@@ -164,7 +165,7 @@ func executeQuery(s, table string) {
 
 func startTimer(item collectItem) {
 	for {
-		newsql := formatSql(item.Sql, item.Frequency)
+		newsql := formatSql(item.Sql, item.Frequency, item.Delay)
 
 		fmt.Println(newsql)
 		executeQuery(newsql, item.Table)
