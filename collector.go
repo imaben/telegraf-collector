@@ -70,10 +70,17 @@ func initMySQL() error {
 }
 
 func formatSql(s string, frequency, delay uint) string {
-	endTime := time.Unix(int64(time.Now().Unix())-int64(delay), 0).Format("2006-01-02 15:04:05")
-	startTime := time.Unix(int64(time.Now().Unix()-int64(frequency)-int64(delay)), 0).Format("2006-01-02 15:04:05")
-	s = strings.Replace(s, "{START_TIME}", startTime, -1)
-	s = strings.Replace(s, "{END_TIME}", endTime, -1)
+	endTime := time.Unix(int64(time.Now().Unix())-int64(delay), 0)
+	startTime := time.Unix(int64(time.Now().Unix()-int64(frequency)-int64(delay)), 0)
+	end_time := endTime.Format("2006-01-02 15:04:05")
+	start_time := startTime.Format("2006-01-02 15:04:05")
+	one_week_duration, _ := time.ParseDuration("-168h")
+	last_week_end_time := endTime.Add(one_week_duration).Format("2006-01-02 15:04:05")
+	last_week_start_time := startTime.Add(one_week_duration).Format("2006-01-02 15:04:05")
+	s = strings.Replace(s, "{START_TIME}", start_time, -1)
+	s = strings.Replace(s, "{END_TIME}", end_time, -1)
+	s = strings.Replace(s, "{LAST_WEEK_START_TIME}", last_week_start_time, -1)
+	s = strings.Replace(s, "{LAST_WEEK_END_TIME}", last_week_end_time, -1)
 	return s
 }
 
@@ -182,16 +189,29 @@ func loop() {
 	}
 }
 
+func watchSqlJson() {
+	for {
+		loadSqlJson()
+		t := time.NewTimer(time.Second)
+		<-t.C
+	}
+}
+
+func loadSqlJson() {
+	if err := configor.Load(&Sqls, "sql.json"); err != nil {
+		fmt.Fprintln(os.Stderr, "Failed to load sql.json", err.Error())
+		os.Exit(1)
+	}
+}
+
 func main() {
 	if err := configor.Load(&Config, "config.json"); err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to load config.json")
 		os.Exit(1)
 	}
 
-	if err := configor.Load(&Sqls, "sql.json"); err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to load sql.json", err.Error())
-		os.Exit(1)
-	}
+	loadSqlJson()
+	go watchSqlJson()
 
 	if len(Sqls.Sql) == 0 {
 		fmt.Fprintln(os.Stdout, "No task to work")
