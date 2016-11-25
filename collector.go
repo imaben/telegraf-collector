@@ -12,6 +12,8 @@ import (
 
 	"database/sql"
 	_ "github.com/go-sql-driver/mysql"
+
+	"github.com/howeyc/fsnotify"
 )
 
 var Config = struct {
@@ -44,6 +46,8 @@ var Ctx = struct {
 	Wg        sync.WaitGroup
 	TcpConn   net.Conn
 }{}
+
+var lock sync.Mutex
 
 /**
  ************ MySQL *************
@@ -170,8 +174,11 @@ func executeQuery(s, table string) {
 
 }
 
-func startTimer(item collectItem) {
+func startTimer(item *collectItem) {
 	for {
+		lock.Lock()
+		lock.Unlock()
+
 		newsql := formatSql(item.Sql, item.Frequency, item.Delay)
 
 		fmt.Println(newsql)
@@ -183,25 +190,49 @@ func startTimer(item collectItem) {
 }
 
 func loop() {
-	for _, s := range Sqls.Sql {
+	for k, _ := range Sqls.Sql {
 		Ctx.Wg.Add(1)
-		go startTimer(s)
+		go startTimer(&Sqls.Sql[k])
 	}
 }
 
 func watchSqlJson() {
-	for {
-		loadSqlJson()
-		t := time.NewTimer(time.Second)
-		<-t.C
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		os.Exit(1)
+	}
+
+	go func() {
+		for {
+			select {
+			case ev := <-watcher.Event:
+				if ev.IsModify() {
+					loadSqlJson()
+					fmt.Println("Sql File reloaded")
+					err = watcher.Watch("./sql.json")
+					if err != nil {
+						os.Exit(1)
+					}
+				}
+			case err := <-watcher.Error:
+				fmt.Println(err)
+			}
+		}
+	}()
+
+	err = watcher.Watch("./sql.json")
+	if err != nil {
+		os.Exit(1)
 	}
 }
 
 func loadSqlJson() {
+	lock.Lock()
 	if err := configor.Load(&Sqls, "sql.json"); err != nil {
 		fmt.Fprintln(os.Stderr, "Failed to load sql.json", err.Error())
 		os.Exit(1)
 	}
+	lock.Unlock()
 }
 
 func main() {
